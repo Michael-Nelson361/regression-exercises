@@ -3,6 +3,7 @@
 import pandas as pd
 import numpy as np
 import os
+import env
 
 # import some more specialized libraries
 import tqdm
@@ -170,3 +171,121 @@ def drop_cols(df,cols=[],extras=False,degree=6):
         
     return df
         
+
+# create acquire function to prepare this nicely
+def acquire_zillow():
+    """
+    Function to pull in zillow data. Returns a DataFrame. Also builds local csv file of the dataset.
+    
+    Parameters:
+    -----------
+    none
+    
+    """
+    # build query
+    query = """
+select 
+    bedroomcnt,
+    bathroomcnt,
+    calculatedfinishedsquarefeet,
+    taxvaluedollarcnt,
+    yearbuilt,
+    taxamount,
+    fips
+from properties_2017
+left join propertylandusetype
+    using(propertylandusetypeid)
+where propertylandusedesc = 'Single Family Residential'
+
+    """
+    
+    # use env file to get database url
+    url = env.get_db_url('zillow')
+    filename = 'zillow.csv'
+    
+    df = w.check_file_exists(filename,query,url)
+    
+    return df
+
+
+def prepare_zillow(df):
+    """
+    Cleans the zillow DataFrame
+    
+    Parameters:
+    -----------
+    df: DataFrame
+        - The zillow DataFrame acquired from Codeup's MySQL database (or from local csv)
+    
+    """
+    # re-assign as a copy to fix warnings
+    df = df.copy()
+    
+    # drop the nulls
+    df = df.dropna()
+    
+    # get a list of the cols and drop the two with decimals
+    cols = list(df.columns)
+    cols.remove('taxamount')
+    cols.remove('bathroomcnt')
+    cols.remove('propertylandusedesc')
+    
+    # convert columns of this list to integer
+    for col in cols:
+        df[col] = df[col].astype(int)
+    
+    return df
+
+
+def split_continuous(df,seed=123):
+    """
+    Returns three dataframes split from one for use in model training, validation, and testing. 
+    
+    Function performs two splits, first to primarily make the training set, and the second to make the validate and test sets.
+    
+    Parameters:
+    -----------
+    df: DataFrame
+        - the prepared dataset to be split
+    seed: int, defaut=123
+        - optional, a seed value to maintain consistency
+    """
+    # run first split
+    train, validate_test = train_test_split(
+        df,
+        train_size = 0.6,
+        random_state = 123
+    )
+    
+    # run second split
+    validate, test = train_test_split(
+        df,
+        train_size = 0.5,
+        random_state = 123
+    )
+    
+    return train,validate,test
+
+
+def wrangle_zillow():
+    """
+    Acquires, prepares, and splits the zillow dataset.
+    
+    Parameters:
+    -----------
+    none
+    
+    
+    """
+    
+    # acquire the data
+    zillow = acquire_zillow()
+    
+    # prepare the data
+    zillow = prepare_zillow(zillow)
+    
+    # split the data
+    train,validate,test = split_continuous(zillow)
+    
+    return train,validate,test
+
