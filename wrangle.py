@@ -127,7 +127,7 @@ def drop_extras(df,target,degree=6):
         
 
 # Split given database
-def split_df(df,strat_var,seed=123):
+def split_categorical(df,strat_var,seed=123):
     """
     Returns three dataframes split from one for use in model training, validation, and testing. Takes two arguments:
         df: any dataframe to be split
@@ -203,7 +203,7 @@ where propertylandusedesc = 'Single Family Residential'
     url = env.get_db_url('zillow')
     filename = 'zillow.csv'
     
-    df = w.check_file_exists(filename,query,url)
+    df = check_file_exists(filename,query,url)
     
     return df
 
@@ -228,11 +228,20 @@ def prepare_zillow(df):
     cols = list(df.columns)
     cols.remove('taxamount')
     cols.remove('bathroomcnt')
-    cols.remove('propertylandusedesc')
     
     # convert columns of this list to integer
     for col in cols:
         df[col] = df[col].astype(int)
+    
+    # convert fips to counties
+    df.fips = df.fips.replace({6037:'Los Angeles',6059:'Orange',6111:'Ventura'})
+
+    # rename columns
+    df = df.rename(columns={'bedroomcnt':'bedrooms',
+                            'bathroomcnt':'bathrooms',
+                            'calculatedfinishedsquarefeet':'calculated_area',
+                            'fips':'county',
+                            'taxvaluedollarcnt':'salesamount'})
     
     return df
 
@@ -253,14 +262,14 @@ def split_continuous(df,seed=123):
     # run first split
     train, validate_test = train_test_split(
         df,
-        train_size = 0.6,
+        train_size = 0.5,
         random_state = 123
     )
     
     # run second split
     validate, test = train_test_split(
         df,
-        train_size = 0.5,
+        train_size = 0.6,
         random_state = 123
     )
     
