@@ -3,5 +3,10 @@ env.py
 .ipynb_checkpoints/
 __pycache__
 .vscode/
-Untitled.*
+Untitled*
 *.csv
+*.json
+*.xlsx
+*.jpg
+*.png
+*.svg
