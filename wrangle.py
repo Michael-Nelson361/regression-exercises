@@ -46,6 +46,7 @@ def print_libs():
     """
     libraries = [
         'import itertools -> iterations',
+        'import time -> time and date work',
         'from tqdm import tqdm -> progress bars on for loops'
         'import pandas as pd -> large scale database work',
         'import numpy as np -> advanced numerical work',
@@ -61,7 +62,8 @@ def print_libs():
         'from sklearn.tree import DecisionTreeClassifier, plot_tree -> DT modeling',
         'from sklearn.neighbors import KNeighborsClassifier -> KNN modeling',
         'from sklearn.ensemble import RandomForestClassifier -> RF modeling',
-        'from sklearn.linear_model import LogisticRegression -> LR modeling'
+        'from sklearn.linear_model import LogisticRegression -> LR modeling',
+        'from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler -> scaling work'
     ]
     
     for library in libraries:
@@ -234,19 +236,19 @@ def prepare_zillow(df):
         df[col] = df[col].astype(int)
     
     # convert fips to counties
-    df.fips = df.fips.replace({6037:'Los Angeles',6059:'Orange',6111:'Ventura'})
+    df['county'] = df.fips.replace({6037:'Los Angeles',6059:'Orange',6111:'Ventura'})
 
     # rename columns
     df = df.rename(columns={'bedroomcnt':'bedrooms',
                             'bathroomcnt':'bathrooms',
-                            'calculatedfinishedsquarefeet':'calculated_area',
+                            'calculatedfinishedsquarefeet':'property_area',
                             'fips':'county',
-                            'taxvaluedollarcnt':'salesamount'})
+                            'taxvaluedollarcnt':'property_value'})
     
     return df
 
 
-def split_continuous(df,seed=123):
+def split_continuous(df,seed=123,**kwargs):
     """
     Returns three dataframes split from one for use in model training, validation, and testing. 
     
@@ -262,14 +264,14 @@ def split_continuous(df,seed=123):
     # run first split
     train, validate_test = train_test_split(
         df,
-        train_size = 0.5,
+        train_size = 0.6,
         random_state = 123
     )
     
     # run second split
     validate, test = train_test_split(
         df,
-        train_size = 0.6,
+        train_size = 0.5,
         random_state = 123
     )
     
