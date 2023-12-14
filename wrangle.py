@@ -242,7 +242,6 @@ def prepare_zillow(df):
     df = df.rename(columns={'bedroomcnt':'bedrooms',
                             'bathroomcnt':'bathrooms',
                             'calculatedfinishedsquarefeet':'property_area',
-                            'fips':'county',
                             'taxvaluedollarcnt':'property_value'})
     
     return df
