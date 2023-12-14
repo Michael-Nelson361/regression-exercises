@@ -313,17 +313,20 @@ def plot_categorical_and_continuous_vars(df,cat_col,con_col):
     
     '''
     
-    plt.figure(figsize=(16,8))
+    plt.figure(figsize=(16,4))
     
     # plot first figure
-    plt.subplot(3,1,1)
-    sns.barplot(data=df,x=cat_col,y=con_col)
+    plt.subplot(1,3,1)
+    sns.barplot(data=df,x=cat_col,y=con_col,hue=cat_col)
+    plt.grid(alpha=0.4)
     # plot second figure
-    plt.subplot(3,1,2)
-    sns.stripplot(data=df,x=cat_col,y=con_col)
+    plt.subplot(1,3,2)
+    sns.stripplot(data=df,x=cat_col,y=con_col,hue=cat_col)
+    plt.grid(alpha=0.4)
     # plot third figure
-    plt.subplot(3,1,3)
-    sns.boxenplot(data=df,x=cat_col,y=con_col)
+    plt.subplot(1,3,3)
+    sns.boxenplot(data=df,x=cat_col,y=con_col,hue=cat_col)
+    plt.grid(alpha=0.4)
 
     plt.tight_layout()
     plt.show()
